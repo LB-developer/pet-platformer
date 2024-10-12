@@ -1,9 +1,9 @@
 {
-  "name": "boilerplate-react",
+  "name": "pet-platformer",
   "type": "module",
   "version": "0.2.0",
-  "description": "React!",
-  "repository": "https://github.com/dev-academy-challenges/react-boilerplate.git",
+  "description": "pet-platformer for dev academy hackathon",
+  "repository": "https://github.com/LB-developer/pet-platformer",
   "main": "server/index.js",
   "scripts": {
     "dev": "vite",
@@ -18,7 +18,7 @@
       "bundle.js"
     ]
   },
-  "author": "Dev Academy Aotearoa",
+  "author": "LB Developer",
   "license": "ISC",
   "devDependencies": {
     "@devacademy/eslint-config": "^1.10.1",
