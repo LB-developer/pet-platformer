@@ -39,7 +39,7 @@ function SpamJump() {
 
 
   const gravity = 0.3
-  const friction = 0.7
+  const friction = 1.0
   const jumpStrength = -10
 
   // generates platforms
@@ -52,13 +52,10 @@ function SpamJump() {
       height: 40,
       color: 'blue',
     }))
-
-
-
   }
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  
+
   useEffect(() => {
     const generatedPlatforms = createPlatforms(10) // adding number adds platform offset by it's index
     setPlatforms(generatedPlatforms)
@@ -86,21 +83,26 @@ function SpamJump() {
         return () => clearInterval(interval)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [player, keys])
 
   function renderCanvas(ctx: CanvasRenderingContext2D, xOffset: number) {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     ctx.fillStyle = '#F0F8FF'
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-    
+
     platforms.forEach((platform) => {
       ctx.fillStyle = platform.color
-      ctx.fillRect(platform.x - xOffset, platform.y, platform.width, platform.height) 
+      ctx.fillRect(
+        platform.x - xOffset,
+        platform.y,
+        platform.width,
+        platform.height,
+      )
       platform.x -= xOffset
     })
-    
+
     setPlatforms(platforms)
- 
   }
 
   function renderPlayer(ctx: CanvasRenderingContext2D, player: Player) {
@@ -123,10 +125,10 @@ function SpamJump() {
       }
 
       if (keys.left) {
-        newX_v = -.1
+        newX_v = -0.1
       }
       if (keys.right) {
-        newX_v = .1
+        newX_v = 0.075
       }
       if (keys.jump && !newJump) {
         newY_v = jumpStrength
@@ -136,9 +138,11 @@ function SpamJump() {
       newX += newX_v
       newY += newY_v
 
-      if (newY > 700) { // when they go out of bounds (lose)
+      if (newY > 700) {
+        // when they go out of bounds (lose)
         return { ...initialPlayerState }
-      } else if (newX + prevPlayer.width > 1240 ) { // win point
+      } else if (newX + prevPlayer.width > 1240) {
+        // win point
         setIsWon(true)
       }
 
@@ -200,6 +204,7 @@ function SpamJump() {
       setPlayer(initialPlayerState) // Reset player state
       setPlatforms(createPlatforms(5)) // Reset platforms
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReset])
 
   return (
