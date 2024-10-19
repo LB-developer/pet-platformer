@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { createRef, useEffect, useRef, useState } from 'react'
 import getRandomNumber from '../utils/getRandomNumber'
 import YouWinPage from './YouWinPage'
 
@@ -8,6 +8,14 @@ interface Platform {
   width: number
   height: number
   color: string
+}
+
+interface BackgroundImage {
+  x: number
+  y: number
+  width: number
+  height: number
+  image: HTMLImageElement
 }
 
 interface Player {
@@ -27,7 +35,7 @@ function SpamJump() {
     x_v: 0,
     y_v: 0,
     jump: false,
-    height: 60,
+    height: 99,
     width: 60,
   }
   const [player, setPlayer] = useState<Player>(initialPlayerState)
@@ -45,7 +53,7 @@ function SpamJump() {
     useState<HTMLImageElement | null>(null)
   const [uiImage, setUiImage] = useState<HTMLImageElement | null>(null)
 
-  const [images, setImages] = useState<HTMLImageElement[]>()
+  const [images, setImages] = useState<BackgroundImage[]>([])
 
   const gravity = 0.3
   const friction = 0.7
@@ -55,18 +63,40 @@ function SpamJump() {
   // defines platforms
   function createPlatforms(count: number): Platform[] {
     return Array.from({ length: count }, (_, index) => ({
-      x: index * 450, // original x
+      x: index * 380, // original x
       y: getRandomNumber(350, 450),
-      width: 300,
-      height: 40,
+      width: 190,
+      height: 47,
       color: 'blue',
     }))
+  }
+  // canvas
+  // height={700}
+  // width={1240}
+  function createBackground(images: HTMLImageElement[]): BackgroundImage[] {
+    const backgroundArray: BackgroundImage[] = []
+    let arrLen = 0
+    do {
+      for (let i = 0; i < 5; i++) {
+        backgroundArray.push({
+          x: i * 700,
+          y: 0,
+          width: 700,
+          height: 700,
+          image: images[i],
+        })
+      }
+
+      arrLen++
+    } while (arrLen < 5)
+    const sortedBackgroundArray = backgroundArray.sort((a, b) => a.x - b.x)
+    return sortedBackgroundArray
   }
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    const generatedPlatforms = createPlatforms(10) // adding number adds platform offset by it's index
+    const generatedPlatforms = createPlatforms(50) // adding number adds platform offset by it's index
     setPlatforms(generatedPlatforms)
 
     if (generatedPlatforms.length > 0) {
@@ -92,10 +122,21 @@ function SpamJump() {
     fg.onload = () => setForegroundImage(fg)
     ui.onload = () => setUiImage(ui)
 
-    // TODO 
+    // TODO
     // set images state to be an array of all images
-    // create x number of images 
+    // setImages(Array(5).fill([bg, mg, fg, ui])) -- WORKING STATIC IMAGES
+    // setImages(createBackground([bg, mg, fg, ui]))
+
+    // create x number of images
     // effect their offset like platforms
+
+    // setImages(Array(5).from({ length: count }, (_, index) => ({
+    //   x: index * 450, // original x
+    //   y: getRandomNumber(350, 450),
+    //   width: 300,
+    //   height: 40,
+    //   color: 'blue',
+    // })))
   }, [])
 
   useEffect(() => {
@@ -128,7 +169,7 @@ function SpamJump() {
         0,
         ctx.canvas.width,
         ctx.canvas.height,
-      ) // Scrollable midground
+      )
     }
   }
 
@@ -136,8 +177,6 @@ function SpamJump() {
     if (foregroundImage) {
       ctx.drawImage(foregroundImage, 0, 0, ctx.canvas.width, ctx.canvas.height) // Static foreground layer
     }
-
-    // Render player on top of the foreground layer
     renderPlayer(ctx, player)
   }
 
@@ -159,10 +198,36 @@ function SpamJump() {
     renderForeground(ctx, player) // Layer 3: Foreground (including player)
     renderUI(ctx) // Layer 4: UI image
 
+    // ctx.drawImage(foregroundImage, 0, 0, ctx.canvas.width, ctx.canvas.height)
+    // [[BackgroundImage, BackgroundImage],[BackgroundImage, BackgroundImage]]
+    // (value, index, array)
+
+    // Background Images
+    // images.forEach((imageObj: BackgroundImage) => {
+    //     ctx.drawImage(
+    //       imageObj.image,
+    //       imageObj.x - xOffset,
+    //       imageObj.y,
+    //       imageObj.width,
+    //       imageObj.height,
+    //     )
+    //     imageObj.x -= xOffset
+    // })
+
     // Platforms
+    const platformImage = new Image()
+    platformImage.src = '/sprites/Environment/ground_grass_broken.png'
+
     platforms.forEach((platform) => {
-      ctx.fillStyle = platform.color
-      ctx.fillRect(
+      // ctx.fillStyle = platform.color
+      // ctx.fillRect(
+      //   platform.x - xOffset,
+      //   platform.y,
+      //   platform.width,
+      //   platform.height,
+      // )
+      ctx.drawImage(
+        platformImage,
         platform.x - xOffset,
         platform.y,
         platform.width,
@@ -171,12 +236,17 @@ function SpamJump() {
       platform.x -= xOffset
     })
 
+    setImages(images)
     setPlatforms(platforms)
   }
 
+  const playerImage = new Image()
+  playerImage.src = '/sprites/Players/bunny2_walk1.png'
+
   function renderPlayer(ctx: CanvasRenderingContext2D, player: Player) {
-    ctx.fillStyle = '#F08080'
-    ctx.fillRect(player.x, player.y, player.width, player.height)
+    // ctx.fillStyle = '#F08080'
+    // ctx.fillRect(player.x, player.y, player.width, player.height)
+    ctx.drawImage(playerImage, player.x, player.y, player.width, player.height)
   }
 
   function updatePlayer() {
@@ -194,7 +264,7 @@ function SpamJump() {
       }
 
       if (keys.left) {
-        newX_v = -0.1
+        newX_v = -0.3
       }
       if (keys.right) {
         newX_v = 0.1
@@ -276,7 +346,7 @@ function SpamJump() {
   }, [isReset])
 
   return (
-    <section className="flex items-center overflow-none justify-center p-20">
+    <section className="flex items-center overflow-none justify-center p-20 mx-auto canvas-section">
       {isWon ? (
         <YouWinPage
           isReset={isReset}
